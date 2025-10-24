@@ -7,8 +7,7 @@ const UploadActivityForm = ({ onSubmit, loading = false }) => {
   const [formData, setFormData] = useState({
     category_id: '',
     description: '',
-    points: '',
-    carbon_offset: ''
+    quantity: ''
   });
   const [categories, setCategories] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -57,7 +56,7 @@ const UploadActivityForm = ({ onSubmit, loading = false }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.category_id || !formData.description || !formData.points || !formData.carbon_offset) {
+    if (!formData.category_id || !formData.description || !formData.quantity) {
       alert('Please fill in all fields');
       return;
     }
@@ -65,8 +64,7 @@ const UploadActivityForm = ({ onSubmit, loading = false }) => {
     const submitData = new FormData();
     submitData.append('category_id', formData.category_id);
     submitData.append('description', formData.description);
-    submitData.append('points', formData.points);
-    submitData.append('carbon_offset', formData.carbon_offset);
+    submitData.append('quantity', formData.quantity);
     
     if (selectedFile) {
       submitData.append('file', selectedFile);
@@ -122,39 +120,21 @@ const UploadActivityForm = ({ onSubmit, loading = false }) => {
           />
         </div>
 
-        {/* Points and Carbon Offset */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Points Earned
-            </label>
-            <input
-              type="number"
-              name="points"
-              value={formData.points}
-              onChange={handleInputChange}
-              className="input-field"
-              placeholder="0"
-              min="0"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Carbon Offset (kg CO₂)
-            </label>
-            <input
-              type="number"
-              name="carbon_offset"
-              value={formData.carbon_offset}
-              onChange={handleInputChange}
-              className="input-field"
-              placeholder="0.0"
-              step="0.1"
-              min="0"
-              required
-            />
-          </div>
+        {/* Quantity Input */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Quantity
+          </label>
+          <input
+            type="number"
+            name="quantity"
+            value={formData.quantity}
+            onChange={handleInputChange}
+            className="input-field"
+            placeholder="0"
+            min="0"
+            required
+          />
         </div>
 
         {/* File Upload */}

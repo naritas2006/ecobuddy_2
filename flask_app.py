@@ -143,11 +143,24 @@ def upload_activity(current_user_id):
         # Get form data
         category_id = request.form.get('category_id')
         description = request.form.get('description')
-        points = request.form.get('points')
-        carbon_offset = request.form.get('carbon_offset')
+        quantity = float(request.form.get('quantity'))
         
-        if not all([category_id, description, points, carbon_offset]):
+        if not all([category_id, description, quantity is not None]):
             return jsonify({'detail': 'Missing required fields'}), 400
+        
+        # Fetch points_per_unit and carbon_per_unit from categories table
+        category_query = "SELECT points_per_unit, carbon_per_unit FROM categories WHERE category_id = ?"
+        category_data = g.db.execute_query(category_query, (category_id,))
+        
+        if not category_data:
+            return jsonify({'detail': 'Category not found'}), 404
+            
+        points_per_unit = category_data[0]['points_per_unit']
+        carbon_per_unit = category_data[0]['carbon_per_unit']
+        
+        # Calculate points and carbon_offset
+        points = quantity * points_per_unit
+        carbon_offset = quantity * carbon_per_unit
         
         # Handle file upload
         image_data = None
@@ -162,11 +175,11 @@ def upload_activity(current_user_id):
                 image_content_type = file.content_type
         
         query = """
-            INSERT INTO activities (user_id, category_id, description, points, carbon_offset, image_data, image_filename, image_content_type)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO activities (user_id, category_id, description, quantity, points, carbon_offset, image_data, image_filename, image_content_type)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         g.db.execute_query(query, (
-            current_user_id, category_id, description, points, carbon_offset,
+            current_user_id, category_id, description, quantity, points, carbon_offset,
             image_data, image_filename, image_content_type
         ))
         

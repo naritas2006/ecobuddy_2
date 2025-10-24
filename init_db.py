@@ -5,8 +5,22 @@ def init_database():
     """Initialize the SQLite database with schema and sample data"""
     
     # Read the schema file
-    with open('schema_sqlite.sql', 'r') as f:
+    with open('schema.sql', 'r') as f:
         schema_sql = f.read()
+
+    # Add DROP TABLE statements to clear existing tables
+    drop_tables_sql = """
+    DROP TABLE IF EXISTS upvotes;
+    DROP TABLE IF EXISTS comments;
+    DROP TABLE IF EXISTS team_members;
+    DROP TABLE IF EXISTS teams;
+    DROP TABLE IF EXISTS user_challenges;
+    DROP TABLE IF EXISTS challenges;
+    DROP TABLE IF EXISTS activities;
+    DROP TABLE IF EXISTS categories;
+    DROP TABLE IF EXISTS users;
+    """
+    schema_sql = drop_tables_sql + schema_sql
     
     # Connect to database
     conn = sqlite3.connect('ecobuddy.db')
@@ -28,30 +42,63 @@ def init_database():
         ('Climate Champion', 'champion@ecobuddy.com', 'hashed_demo123', 'Individual'),
         ('Sustainable Living', 'sustainable@ecobuddy.com', 'hashed_demo123', 'Organization');
         
-        -- Insert sample activities
-        INSERT OR IGNORE INTO activities (user_id, category_id, description, points, carbon_offset, date_time) VALUES
-        (1, 1, 'Recycled 10 plastic bottles and 5 aluminum cans', 15, 1.5, datetime('now', '-1 day')),
-        (1, 2, 'Cycled to work instead of driving - 5 miles round trip', 25, 2.0, datetime('now', '-2 days')),
-        (1, 4, 'Planted 3 trees in the community garden', 45, 6.0, datetime('now', '-3 days')),
-        (2, 3, 'Turned off all lights and electronics for 2 hours', 10, 0.8, datetime('now', '-1 day')),
-        (2, 5, 'Used rainwater to water plants instead of tap water', 8, 0.5, datetime('now', '-2 days')),
-        (3, 1, 'Office recycling program - collected 50kg of paper', 30, 3.0, datetime('now', '-1 day')),
-        (3, 2, 'Organized carpool for 5 employees', 20, 4.0, datetime('now', '-3 days')),
-        (4, 4, 'Started community garden with 10 participants', 60, 8.0, datetime('now', '-5 days')),
-        (4, 6, 'Reduced office waste by 40% through better practices', 35, 2.5, datetime('now', '-2 days')),
-        (5, 7, 'Implemented sustainable living practices at home', 25, 1.8, datetime('now', '-1 day'));
+        -- Insert sample categories with new fields
+        INSERT OR IGNORE INTO categories (name, description, points_per_unit, carbon_per_unit) VALUES
+        ('Tree Planting', 'Planting or maintaining a tree', 1.0, 22.0),
+        ('Recycling Paper', 'Recycling paper instead of using virgin paper', 1.0, 1.0),
+        ('Car → Train/Bus', 'Using public transport instead of car', 1.0, 0.18),
+        ('Cycling', 'Cycling instead of driving', 1.0, 0.3),
+        ('Walking', 'Walking instead of driving', 1.0, 0.3),
+        ('LED Bulb Replacement', 'Replacing incandescent bulb with LED', 1.0, 20.0),
+        ('Avoid Single-Use Plastic', 'Avoiding single-use plastic items', 1.0, 0.04),
+        ('Compost Food Waste', 'Composting food waste instead of sending to landfill', 1.0, 0.25),
+        ('Skip Beef Meal', 'Avoiding one beef-based meal (~120 g)', 3.0, 3.0),
+        ('Solar Electricity', 'Generating solar electricity instead of using grid power', 1.0, 0.5);
+        
+        -- Insert sample activities with quantity
+        INSERT OR IGNORE INTO activities (user_id, category_id, description, quantity, points, carbon_offset) 
+        VALUES 
+        (1, 1, 'Planted a maple tree in backyard', 2, 2.0, 44.0), 
+        (2, 2, 'Recycled office paper', 5, 5.0, 5.0), 
+        (1, 4, 'Cycled to work', 10, 10.0, 3.0);
+        
+        -- Insert sample challenges
+        INSERT OR IGNORE INTO challenges (name, description, start_date, end_date, reward_points)
+        VALUES
+        ('30-Day Recycling Challenge', 'Recycle daily for 30 days', '2025-11-01', '2025-11-30', 50),
+        ('Green Commute Week', 'Use eco-friendly transport for a week', '2025-11-01', '2025-11-07', 20);
         
         -- Join users to challenges
-        INSERT OR IGNORE INTO user_challenges (user_id, challenge_id, status, points_earned) VALUES
-        (1, 1, 'Active', 15),
-        (1, 2, 'Active', 25),
-        (2, 1, 'Active', 10),
-        (2, 3, 'Active', 8),
-        (3, 1, 'Active', 30),
-        (3, 2, 'Active', 20),
-        (4, 4, 'Active', 60),
-        (4, 1, 'Active', 35),
-        (5, 3, 'Active', 25);
+        INSERT OR IGNORE INTO user_challenges (user_id, challenge_id, status, points_earned)
+        VALUES
+        (1, 1, 'Active', 0),
+        (2, 1, 'Completed', 50),
+        (1, 2, 'Active', 0);
+        
+        -- Insert sample teams
+        INSERT OR IGNORE INTO teams (team_name, description)
+        VALUES
+        ('Eco Warriors', 'Team focused on sustainability'),
+        ('Green Riders', 'Cycling enthusiasts promoting clean transport');
+
+        -- Insert sample team members
+        INSERT OR IGNORE INTO team_members (user_id, team_id)
+        VALUES
+        (1, 1),
+        (2, 1),
+        (1, 2);
+
+        -- Insert sample upvotes
+        INSERT OR IGNORE INTO upvotes (user_id, activity_id)
+        VALUES
+        (2, 1),
+        (1, 2);
+
+        -- Insert sample comments
+        INSERT OR IGNORE INTO comments (user_id, activity_id, text)
+        VALUES
+        (2, 1, 'Great job planting trees!'),
+        (1, 2, 'Recycling is important, keep it up!');
         """
         
         cursor.executescript(demo_data)
